@@ -7,9 +7,17 @@ def connScan(host,port):
         s = socket(AF_INET,SOCK_STREAM)
         s.connect((host,port))
         print(f'Port {port} Open')
-        s.close()
     except Exception as err:
         print(f'Port {port} Closed')
+        pass
+    try:
+        banner = s.recv(128)
+        print(banner)
+        s.close()
+    except timeout as err:
+        print(f"Timed out grabbing banner from port: {port}")
+        pass
+    print("\n")
 
 def portScan(host,ports):
     try:
@@ -17,7 +25,7 @@ def portScan(host,ports):
     except expression as identifier:
         print(f"Cannot resolve: {host}")
     
-    setdefaulttimeout(1)
+    setdefaulttimeout(2)
 
     for port in ports:
         connScan(host,int(port))
