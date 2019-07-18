@@ -2,15 +2,15 @@ import zipfile
 import sys
 words = open("words.txt","r").readlines()
 
-if(len(sys.argv)==1):
-    exit(0)
+#if(len(sys.argv)==1):
+#    exit(0)
 
-_zip = zipfile.ZipFile(sys.argv[1])
+_zip = zipfile.ZipFile("test.zip")
 
 for word in words:
     try:
         _zip.extractall(pwd=word.strip("\n"))
-        print(word)
+        print word
         exit(0)
     except Exception as err:
         pass

@@ -1,22 +1,29 @@
 import argparse
+import threading
+from threading import * 
 import socket
 from socket import *
 
+screenLock = Semaphore(value=1)
+
 def connScan(host,port):
+
     try:
         s = socket(AF_INET,SOCK_STREAM)
         s.connect((host,port))
+        banner = s.recv(1024)
+
+        screenLock.acquire()
+        
         print(f'Port {port} Open')
-    except Exception as err:
-        print(f'Port {port} Closed')
-        pass
-    try:
-        banner = s.recv(128)
         print(banner)
+    except Exception as err:
+        screenLock.acquire()
+        print(f'Port {port} Closed')
+    finally:
+        screenLock.release()
         s.close()
-    except timeout as err:
-        print(f"Timed out grabbing banner from port: {port}")
-        pass
+
     print("\n")
 
 def portScan(host,ports):
@@ -28,8 +35,8 @@ def portScan(host,ports):
     setdefaulttimeout(2)
 
     for port in ports:
-        connScan(host,int(port))
-
+        t = threading.Thread(target=connScan,args=[host,int(port)])
+        t.start()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("host",type=str,help="Hostname")

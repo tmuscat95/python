@@ -13,6 +13,7 @@ def vulnerable(banner):
 
 def connect(ip,port):
     try:
+        s = socket.socket()
         s.connect((ip,port))
         ans = s.recv(1024)
         print(str(port) + ": ")
@@ -22,20 +23,20 @@ def connect(ip,port):
             print("VULNERABLE")
         
     except Exception as err:
-        print(str(port) + ": ")
-        print(err)
+        pass
+        #print(str(port) + ": ")
+        #print(err)
     finally:
         print("\n")
 
 def main():
     
     socket.setdefaulttimeout(2) 
-    ip = "127.0.0.1"
-    s = socket.socket()
+    ip = sys.argv[1]
     vulnlines = []
     try:
         
-        if(len(sys.argv)>=2):
+        if(len(sys.argv)==2):
             ip = sys.argv[1]
         elif(len(sys.argv)>=3):
             f = open(sys.argv[2],"r")
