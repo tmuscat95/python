@@ -28,15 +28,15 @@ if(len(sys.argv)==1):
 else:
     ftp = ftplib.FTP(sys.argv[1])    
     
-anonLoginSuccess = anonlogin(ftp)
+anonLoginSuccess = anonLogin(ftp)
 
 if(anonLoginSuccess):
     print("Anonymous Login: Success")
 else:
     print("Anonymous Login: Failure")  
 
-users = fopen("/usr/share/wordlists/users.txt","r")
-pwds = fopen("/usr/share/wordlists/rockyou.txt")
+users = open("./usernames.txt","r")
+pwds = open("./words.txt")
 
 for u in users:
     for p in pwds:
