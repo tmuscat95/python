@@ -16,7 +16,7 @@ client.send(buffer.encode("utf-8"))
 response_len = 1
 response = ""
 
-while :
+while True:
     data = client.recv(4096)
     response_len = len(data)
     response += data
