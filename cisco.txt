@@ -1,0 +1,188 @@
+R1(config)# enable password [password]
+R1(config)# enable secret [password]
+
+R1# show startup-config
+R1# copy running-config startup-config
+
+R1# config terminal
+
+banner motd [messageoftheday to display at login]
+
+Set Hostname
+	R1#(config) hostname [name]
+	R1#(config) no hostname [name]
+
+R1# show ip interface brief
+
+Configure Routing:
+
+To display the routers routing table use:
+	R1# show ip route
+
+Use the following commands to run the rip routing protocol, which will
+add routing for all attached networks (0.0.0.0), on the R1 router, and
+advertise these networks to any connected routers (R2 in this case).
+	R1(config)# router rip
+	R1(config-router)# network 0.0.0.0
+	R1(config-router)# exit
+	R1(config)#
+
+Ip Address to Interface
+interface [interface name]
+
+	description [text]
+	ip address [ip] [subnet mask]
+	no shutdown - turn on interface
+	exit
+	
+Configure Console Password
+	line console 0 //configure console access on line 1
+	password [pword]
+//set encryption on console ports
+R1(config)# service password-encryption
+R1(config)# exit
+
+Telnet Configure
+	R1# line vty 0 4 //configure 5 telnet lines
+	R1(config)# line vty 0 4
+	R1(config-line)# password telnetpass
+	R1(config-line)# login
+	R1(config-line)# exit
+
+Configuring SSH Services
+
+	R1# config terminal
+	
+Must Set Domain name on device first.
+
+	R1(config)# ip domain-name secure.com
+
+RSA asymmetric cryptography keys are needed by SSH, for
+authentication, and encryption of traffic. Use a key of 1024 bits and not
+the Cisco 512 default value, as shown below:
+	R1(config)# crypto key generate rsa general-keys modulus 1024
+The name for the keys will be: R1.secure.com
+	R1(config)# ip ssh time-out 10
+	R1(config)# ip ssh authentication-retries 3
+
+Setting SSH Authentication via username
+	R1(config)# username admin secret sshpass
+	R1(config)# line vty 0 4
+	R1(config-line)# transport input ssh
+	R1(config-line)# login local
+	
+AAA Services
+
+	R1(config)# aaa new-model //create new aaa services model
+
+Configure the login authentication to use the enable password:
+	R1(config)# aaa authentication login default enable
+
+	R1(config)# username rich secret richpass
+	R1(config)# username bob secret bobpass
+	R1(config)# username pete secret petepass
+
+
+Configure Console Authentication using local user accounts
+
+	R1(config)# aaa authentication login CONSOLE-LINE local
+	R1(config)# line con 0
+	R1(config-line)# login authentication CONSOLE-LINE
+
+
+Configuring AAA with telnet:
+	R1(config)# aaa new-model
+	R1(config)# aaa authentication login [new Authentication list name] [usernamedatabase name]
+ex. aaa authentication login TELNET-LINES local (uses local users created like above)
+
+	R1(config)# line vty 0 4
+	R1(config-line)# login authentication TELNET-LINES
+
+Configuring Router With Radius Server Authentication
+	R1(config)# aaa new-model
+	R1(config)# aaa authentication login default group radius none
+	R1(config)# radius-server host 192.168.10.2 key [secret keyhere]
+	
+Debugging
+	R1# show clock
+	R1# clock set 00:00:00 01 January 2020
+		Show TimeStamps`
+			R1# show run | include timestamp
+		Set Timestamps
+			R1# service timestamps debug datetime msec
+		Activate Debugging Trace For Authentication
+			R1# debug aaa authentication
+			
+Define numbered access list
+ 
+	Router(config)# access-list 110 deny ip 127.0.0.0 0.255.255.255 any log
+	Router(config)# access-list 110 permit ip any 146.1.1.0 0.0.0.255
+	Router(config)# access-list 110 deny any any log
+
+	Standard access list
+		access-list {permit | deny} {source [source-wildcard] | any}
+	Extended access list
+		Router(config)# access-list [number] [permit/any] [ip/udp/icmp] [from_ip] [wildcard] [to_ip] [wildcard] log
+
+Apply access list to the interface 
+	Router(config)# interface s0
+	Router(config-if)# ip access-group 110 in
+
+Removing ACL list 
+
+	remove from interface
+	Router(config-if)# no ip access-group 130
+	Router(config-if)# exit
+
+Named ACL list
+	Router(config)# ip access-list [standard | extended] ACL_NAME
+	Router(config-ext-nacl)# remark IP Spoofing Filtering Inbound
+	Router(config-ext-nacl)# ! Drop loopback (local host) addresses
+	Router(config-ext-nacl)# deny ip 127.0.0.0 0.255.255.255 any log
+	Router(config-ext-nacl)# ! Drop Invalid Addresses
+	Router(config-ext-nacl)# deny ip 0.0.0.0 0.255.255.255 any log
+	Router(config-ext-nacl)# ! Drop Private Addresses, (RFC1918 filtering)
+	Router(config-ext-nacl)# deny ip 172.16.0.0 0.15.255.255 any log
+	Router(config-ext-nacl)# deny ip 172.16.0.0 0.15.255.255 any log
+	Router(config-ext-nacl)# ! Drop reserved multicast addresses
+	Router(config-ext-nacl)# deny ip 224.0.0.0 15.255.255.255 any log
+	Router(config-ext-nacl)# ! Drop addresses from the internal networks
+	Router(config-ext-nacl)# deny ip 146.1.1.0 0.0.0.255 any log
+	Router(config-ext-nacl)# ! Allow other traffic to internal networks
+	Router(config-ext-nacl)# permit ip any 146.1.1.0 0.0.0.255
+	Router(config-ext-nacl)# ! Drop everything else
+	Router(config-ext-nacl)# deny any any log
+	Router(config-ext-nacl)# exit
+
+
+
+Remove access list
+Router(config)# no access-list 130
+
+ICMP Filtering
+	Router(config)# ip access-list extended INTERNET_INBOUND_ICMP
+	Router(config-ext-nacl)# remark ICMP Inbound
+	Router(config-ext-nacl)# ! Deny ICMP messages known to be used in attacks
+	Router(config-ext-nacl)# deny icmp any any echo log
+	Router(config-ext-nacl)# deny icmp any any redirect log
+	Router(config-ext-nacl)# ! Allow all other ICMP messages
+	Router(config-ext-nacl)# allow icmp any any
+	Router(config-ext-nacl)# ! Allow other traffic to internal networks
+	Router(config-ext-nacl)# permit ip any 146.1.1.0 0.0.0.255
+	Router(config-ext-nacl)# ! Drop everything else
+	Router(config-ext-nacl)# deny any any log
+	Router(config-ext-nacl)# exit
+
+Securing Router:
+	Command Syntax:
+	Router(config-line)# access-class access-list-number {in | out}
+	Example Securing Virtual Terminal Lines:
+	Router(config)# ip access-list standard REMOTE_ACCESS
+	Router(config-std-nacl)# remark SysAdmin Remote Access
+	Router(config-std-nacl)# permit host 146.100.1.1 log
+	Router(config-std-nacl)# deny any log
+	Router(config-std-nacl)# exit
+	Router(config)# ! Set all virtual interfaces to ssh access for the sysadmin
+	Router(config)# line vty 0 4
+	Router(config-line)# transport input ssh
+	Router(config-line)# access-class REMOTE_ACCESS in
