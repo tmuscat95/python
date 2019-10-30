@@ -186,3 +186,61 @@ Securing Router:
 	Router(config)# line vty 0 4
 	Router(config-line)# transport input ssh
 	Router(config-line)# access-class REMOTE_ACCESS in
+	
+	Setting routes for subnets:
+	R2(config)# ip route [ip] [subnet] [interface to route packets from this subnet to]
+	R2(config)# ip route 172.16.3.0 255.255.255.0 s1/1
+	R2(config)# ip route 209.165.200.224 255.255.255.248 s1/0
+	R2(config)# ip route 172.16.3.0 255.255.255.0 s1/1
+	
+Enable http access to router:
+	ip http server
+	
+CISCO ASA:
+	Erase startup config
+	ciscoasa# write erase
+	
+	Show startup config
+	ciscoasa# show start
+	
+	Restart 
+	ciscoasa#reload
+	
+Configuring ASA for two-zone network with DMZ
+	Configuring inside zone:
+	CCNAS-ASA(config)# interface g0/1
+	CCNAS-ASA(config-if)# nameif inside.
+	CCNAS-ASA(config-if)# security-level 100
+	CCNAS-ASA(config-if)# ip address 192.168.1.1 255.255.255.0
+	CCNAS-ASA(config-if)# no shutdown
+
+	Configuring outside zone:
+	CCNAS-ASA(config-if)# interface g0/0
+	CCNAS-ASA(config-if)# nameif outside
+	INFO: Security level for "outside" set to 0 by default.
+	CCNAS-ASA(config-if)# ip address 209.165.200.226 255.255.255.248
+	CCNAS-ASA(config-if)# no shutdown
+	
+Allow http connections from the inside network:
+	CCNAS-ASA(config)# http server enable
+	CCNAS-ASA(config)# http 192.168.1.0 255.255.255.0 inside
+	
+Configuring default route of last resort:
+	CCNAS-ASA(config)# route outside 0.0.0.0 0.0.0.0 209.165.200.225
+	CCNAS-ASA(config)# object network INSIDE-NET
+	CCNAS-ASA(config-network-object)# subnet 192.168.1.0 255.255.255.0
+	CCNAS-ASA(config-network-object)# nat (inside,outside) dynamic interface
+	CCNAS-ASA(config-network-object)# end
+Configure ICMP:
+	CCNAS-ASA(config)# policy-map global_policy
+	CCNAS-ASA(config-pmap)# class inspection_default
+	CCNAS-ASA(config-pmap-c)# inspect icmp
+	
+Configure ASA as ICMP server for the inside network:
+	CCNAS-ASA(config)# dhcpd address 192.168.1.5-192.168.1.100 inside
+	CCNAS-ASA(config)# dhcpd address [ip range] inside
+	
+	CCNAS-ASA(config)# dhcpd dns 209.165.201.2
+	CCNAS-ASA(config)# dhcpd enable inside
+	
+	
