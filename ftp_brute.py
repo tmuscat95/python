@@ -22,7 +22,7 @@ def tryLogin(ftp,u,p):
 
 
 anonLoginSuccess = False
-
+ftp = None
 if(len(sys.argv)==1):
     ftp = ftplib.FTP("127.0.0.1")
 else:
