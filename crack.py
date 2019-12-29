@@ -2,7 +2,7 @@ import crypt
 import os
 
 def bruteForce(passes,words,phash,uname = ""):
-    salt = phash[0:2]
+    salt = phash[0:1]
     plaintext_pass = ""
     for word in words:
         if(crypt.crypt(word.strip("\n"),salt)==phash):
