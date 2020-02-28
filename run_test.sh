@@ -41,3 +41,5 @@ if [[ -z $WEBUI ]]; then
 else 
 	echo "Web UI running on port 80"
 fi
+
+./cleanup.sh
