@@ -25,6 +25,8 @@ fi
 if [[ -z $KBNA ]]; then
 	echo "Kibana not running on port 5601"
 else
+
+./clear.sh
 	echo "Kibana running on port 5601"
 fi
 
