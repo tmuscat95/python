@@ -25,8 +25,6 @@ fi
 if [[ -z $KBNA ]]; then
 	echo "Kibana not running on port 5601"
 else
-
-./clear.sh
 	echo "Kibana running on port 5601"
 fi
 
@@ -42,4 +40,5 @@ else
 	echo "Web UI running on port 80"
 fi
 
-./cleanup.sh
+rm ./install_cybersift.sh
+rm ./ss.out
